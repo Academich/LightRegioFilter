@@ -9,7 +9,11 @@ def regioselectivity_check(reaction: str,
     reaction = canonicalize_reaction(reaction)
     site_atom_index_actual, relevant_reactant = MappingFromTemplate(template, reaction).run()
     sites_atom_index_expected = site_predictor.run(relevant_reactant)
-    return site_atom_index_actual in sites_atom_index_expected
+    if len(sites_atom_index_expected) == 0:
+        return "undecided"
+    if site_atom_index_actual in sites_atom_index_expected:
+        return "correct"
+    return "wrong"
 
 
 if __name__ == '__main__':

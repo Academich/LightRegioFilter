@@ -72,10 +72,10 @@ class MappingFromTemplate:
 
 
 if __name__ == '__main__':
-    diels_alder_template = "[C:1]=[C:2][C:3]=[C:4].[C:5]=[C:6]>>[C:1]1[C:2]=[C:3][C:4][C:5][C:6]1"
-    eas_template = "O=C1-C-C-C(=O)-N-1-[Br:1].[c:2]:[cH:3]:[c:4]>>[Br:1]-[c:3](:[c:2]):[c:4]"
-    diene = "C=CC=C"
-    dienophile = "C=CC#N"
-    rxn = "O=C1CCC(=O)N1Br.NC(=O)Nc1cccc2ccc(=O)[nH]c12>>NC(=O)Nc1c(Br)ccc2ccc(=O)[nH]c12"
+    # diels_alder_template = "[C:1]=[C:2][C:3]=[C:4].[C:5]=[C:6]>>[C:1]1[C:2]=[C:3][C:4][C:5][C:6]1"
+    eas_template = "O=C1-C-C-C(=O)-N-1-[Br;H0;D1;+0:1].[c:2]:[cH;D2;+0:3]:[c:4]>>[Br;H0;D1;+0:1]-[c;H0;D3;+0:3](:[c:2]):[c:4]"
+    # diene = "C=CC=C"
+    # dienophile = "C=CC#N"
+    rxn = "O=C1CCC(=O)N1Br.CNC(=S)Nc1ccccc1>>CNC(=S)Nc1ccc(Br)cc1"
     report = MappingFromTemplate(eas_template, rxn).run()
     print(report)

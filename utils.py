@@ -49,3 +49,14 @@ def canonicalize_reaction(smi: str) -> str:
     center = ".".join([Chem.MolToSmiles(Chem.MolFromSmiles(s), isomericSmiles=False) for s in center.split(".")])
     right = ".".join([Chem.MolToSmiles(Chem.MolFromSmiles(s), isomericSmiles=False) for s in right.split(".")])
     return left + ">" + center + ">" + right
+
+
+def template_relevant(template_left: str, template_right: str):
+    if "Br" in template_right and "Br" in template_left:
+        # Check if the bromine atom is connected to an aromatic carbon atom
+        mol = Chem.MolFromSmarts(template_right)
+        for a in mol.GetAtoms():
+            if a.GetSymbol() == "Br":
+                neighbor = a.GetNeighbors()[0]
+                return neighbor.GetAtomicNum() == 6 and neighbor.GetIsAromatic() 
+    return False
