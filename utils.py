@@ -51,12 +51,45 @@ def canonicalize_reaction(smi: str) -> str:
     return left + ">" + center + ">" + right
 
 
+def _unsubstituted_part_of_an_aromatic_ring(atom, mol):
+    for a in mol.GetAtoms():
+        if a.GetAtomMapNum() == atom.GetAtomMapNum():
+            return tuple([(i.GetIsAromatic() or "&a" in i.GetSmarts()) for i in a.GetNeighbors()]) == (True, True)
+
+
 def template_relevant(template_left: str, template_right: str):
     if "Br" in template_right and "Br" in template_left:
         # Check if the bromine atom is connected to an aromatic carbon atom
-        mol = Chem.MolFromSmarts(template_right)
-        for a in mol.GetAtoms():
+        left = Chem.MolFromSmarts(template_left)
+        right = Chem.MolFromSmarts(template_right)
+        for a in right.GetAtoms():
             if a.GetSymbol() == "Br":
-                neighbor = a.GetNeighbors()[0]
-                return neighbor.GetAtomicNum() == 6 and neighbor.GetIsAromatic() 
+                hal_neighbor = a.GetNeighbors()[0]
+                return hal_neighbor.GetAtomicNum() == 6 and hal_neighbor.GetIsAromatic() and _unsubstituted_part_of_an_aromatic_ring(hal_neighbor, left)
     return False
+
+
+# === Tools for faster data processing on CPU using pool of processes ===
+from pandas import Series, concat
+from multiprocessing import Pool
+from typing import Callable
+from functools import partial
+import numpy as np
+
+def __parallelize(d: Series, func: Callable, num_of_processes: int) -> Series:
+    data_split = np.array_split(d, num_of_processes)
+    pool = Pool(num_of_processes)
+    d = concat(pool.map(func, data_split))
+    pool.close()
+    pool.join()
+    return d
+
+
+def run_on_subset(func: Callable, use_tqdm, data_subset):
+    if use_tqdm:
+        return data_subset.progress_apply(func)
+    return data_subset.apply(func)
+
+
+def parallelize_on_rows(d: Series, func, num_of_processes: int, use_tqdm=False) -> Series:
+    return __parallelize(d, partial(run_on_subset, func, use_tqdm), num_of_processes)
