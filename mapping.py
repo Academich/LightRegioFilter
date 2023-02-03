@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from rdkit import Chem
 from rdkit.Chem import rdChemReactions
 
@@ -24,7 +22,8 @@ class MappingFromTemplate:
                  ) -> None:
         reactants, products = reaction.split(">>")
         self.products = products
-        self.rxn = rdChemReactions.ReactionFromSmarts(template)
+        self.template = template
+        self.rxn = rdChemReactions.ReactionFromSmarts(self.template)
         self.reactant_smiles = reactants.split(".")
         self.reactant_mols = []
         self.aam_ranges = []  # ranges of AAM indexes for every index of a molecule
@@ -50,6 +49,11 @@ class MappingFromTemplate:
 
         self._set_up_reactants()
         products = self.rxn.RunReactants(self.reactant_mols)
+        if len(products) == 0:
+            t_left, t_right = self.template.split(">>")
+            self.template = ".".join([i for i in reversed(t_left.split("."))]) + ">>" + t_right
+            self.rxn = rdChemReactions.ReactionFromSmarts(self.template)
+            products = self.rxn.RunReactants(self.reactant_mols)
 
         for p in range(len(products)):
 
