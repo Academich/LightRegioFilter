@@ -69,6 +69,26 @@ def template_relevant(template_left: str, template_right: str):
     return False
 
 
+def relevant_site_from_mapping(rsmi: str):
+    candidate_atom_map_nums = set()
+    reactants, _, products = rsmi.split(">")
+    reactant_mols = Chem.MolFromSmiles(reactants)
+    product_mols = Chem.MolFromSmiles(products)
+    if reactant_mols is None or product_mols is None:
+        return
+    for ar in reactant_mols.GetAtoms():
+        if ar.GetAtomicNum() == 6 and ar.GetIsAromatic() and tuple([i.GetIsAromatic() for i in ar.GetNeighbors()]) == (True, True):
+            candidate_atom_map_nums.add(ar.GetAtomMapNum())
+    for ap in product_mols.GetAtoms():
+        if ap.GetAtomMapNum() in candidate_atom_map_nums and ap.GetAtomicNum() == 6 and len(ap.GetNeighbors()) == 3 and len({"Br", "Cl", "I"} & {i.GetSymbol() for i in ap.GetNeighbors()}) > 0:
+            relevant_reactant = [m for m in reactants.split(".") if f":{ap.GetAtomMapNum()}]" in m].pop()
+            relevant_reactant = Chem.MolToSmiles(Chem.MolFromSmiles(relevant_reactant), isomericSmiles=True)
+            relevant_reactant_mol = Chem.MolFromSmiles(relevant_reactant)
+            for a in relevant_reactant_mol.GetAtoms():
+                if a.GetAtomMapNum() == ap.GetAtomMapNum():
+                    return a.GetIdx(), relevant_reactant
+                
+
 # === Tools for faster data processing on CPU using pool of processes ===
 from pandas import Series, concat
 from multiprocessing import Pool
