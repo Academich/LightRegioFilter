@@ -4,15 +4,16 @@ from DescriptorCreator.PrepAndCalcDescriptor import EASMolPreparation
 from rdkit import Chem
 import lightgbm
 
-THRESHOLD = 0.35
 
 class ReactionSitePredictor:
 
     def __init__(self,
                  model: str,
+                 threshold=0.35,
                  n_shells: int = 5,
                  use_cip_sort: bool = True):
         self.model = lightgbm.Booster(model_file=model)
+        self.threshold = threshold
         self.predictor = EASMolPreparation()
         self.des = ('GraphChargeShell', {'charge_type': 'cm5',
                                          'n_shells': n_shells,
@@ -23,8 +24,7 @@ class ReactionSitePredictor:
         cm5_list = self.predictor.calc_CM5_charges(smiles, name='', optimize=False, save_output=True)
         atom_indices, descriptor_vector = self.predictor.create_descriptor_vector(self.des[0], **self.des[1])
         pred_proba = self.model.predict(descriptor_vector, num_iteration=self.model.best_iteration)
-        atom_reactive = pred_proba > THRESHOLD
-        # atom_reactive = [bool(x) for x in pred]
+        atom_reactive = pred_proba > self.threshold
         reactive_sites = np.array(atom_indices)[atom_reactive].tolist()
         reactive_sites = find_identical_atoms(self.predictor.rdkit_mol, reactive_sites)
         labels = [int(1) if site in reactive_sites else int(0) for site in range(len(cm5_list))]
