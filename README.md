@@ -1,4 +1,13 @@
-# RegioML
+# Reaction site filter
+This is a fork of the RegioML repository. It is designed to check the correctness of an electrophilic aromatic halogenation  
+reaction. More specifically, the NameRXN classes 10.2.1 Bromination, 10.2.3 Clorination, 10.2.4 Iodination.  
+
+## Filter
+The functions in `regioselectivity_check.py` do the check. A reaction can be labeled either as "correct", "wrong" or "undecided".  
+The function `check_with_template` makes the prediction given the unmapped reactions SMILES and the reaction template.  
+The function `check_with_aam` makes the prediction for the mapped reaction SMILES.
+
+## RegioML (Original)
 RegioML is an atom-based machine learning model for predicting the regioselectivities of electrophilic aromatic substitution reactions. The model relies on CM5 atomic charges computed using semiempirical tight binding (GFN1-xTB) combined with the ensemble decision tree variant light gradient boosting machine (LightGBM).
 
 More information is available in the [RegioML paper](https://doi.org/10.1039/D1DD00032B). 
@@ -18,7 +27,7 @@ Then download the binaries of xtb version 6.4.0:
 
     mkdir dep; cd dep; wget https://github.com/grimme-lab/xtb/releases/download/v6.4.0/xtb-210201.tar.xz; tar -xvf ./xtb-210201.tar.xz; cd ..
 
-# Usage
+# Usage (Original)
 
 An example of the command line use of RegioML:
 
